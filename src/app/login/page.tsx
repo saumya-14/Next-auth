@@ -1,8 +1,10 @@
+import LoginForm from "@/component/loginForm";
+
 const Loginpage=()=>{
     return(
       <div className="login">
         <h1>Welcome to the loginpage</h1>
-        <p>this page is visible to everyone </p>
+       <LoginForm/>
       </div>
     )
   }
