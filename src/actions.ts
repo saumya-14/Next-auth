@@ -1,10 +1,9 @@
 "use server";
-import { getIronSession } from "iron-session"
-import { sessionOptions,SessionData, defaultSession } from "./lib"
-import { cookies } from "next/headers"
+import { sessionOptions, SessionData, defaultSession } from "@/lib";
+import { getIronSession } from "iron-session";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-
 let username = "john";
 let isPro = true;
 let isBlocked = true;
@@ -16,11 +15,15 @@ export const getSession= async ()=>{
     if(!session.isLoggedIn){
         session.isLoggedIn=defaultSession.isLoggedIn;
     }
+  //check the user in db
+
+     session.isBlocked=isBlocked;
+     session.isPro =isPro;
     return session;
     
 }
 
-export const login= async (formData:FormData)=>{
+export const login= async (prevState:{error:undefined | string},formData:FormData)=>{
     const session=await getSession()
 
     const formUsername=formData.get("username") as string 
@@ -39,5 +42,29 @@ export const login= async (formData:FormData)=>{
    
 }
 export const logout= async ()=>{
+
+    const session =await getSession()
+    session.destroy();
+    redirect("/");
    
 }
+export const changePremium = async () => {
+    const session = await getSession();
+  
+    isPro = !session.isPro;
+    session.isPro = isPro;
+    await session.save();
+    revalidatePath("/profile");
+  };
+  
+  export const changeUsername = async (formData: FormData) => {
+    const session = await getSession();
+  
+    const newUsername = formData.get("username") as string;
+  
+    username = newUsername;
+  
+    session.username = username;
+    await session.save();
+    revalidatePath("/profile");
+  };
